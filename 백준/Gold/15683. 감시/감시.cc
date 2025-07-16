@@ -2,95 +2,117 @@
 #include <vector>
 #include <algorithm>
 
+#define MAX 9
+
 using namespace std;
 
 int N, M;
-int arr[8][8];
+int graph[MAX][MAX];
+int dx[4] = { 0,1,0,-1 };
+int dy[4] = { 1,0,-1,0 };
+int res = 987654321;
+
 vector<pair<int, int>> cctv;
-int ans = 987654321;
 
-int dx[4] = {0, -1, 0, 1}; // 우, 상, 좌, 하
-int dy[4] = {1, 0, -1, 0};
+void check(int x, int y, int dir) {
 
-void check(int x, int y, int dir){
-    dir %= 4;
-    while(1){
-        int nx = x + dx[dir];
-        int ny = y + dy[dir];
-        x = nx;
-        y = ny;
-        if(nx < 0 || ny < 0 || nx >= N || ny >= M) return;
-        if(arr[nx][ny] == 6) return;
-        if(arr[nx][ny] != 0) continue;
-        arr[nx][ny] = -1;
-    }
+	dir %= 4;
+
+	while (1) {
+		x = x + dx[dir];
+		y = y + dy[dir];
+
+		if (x < 0 || x >= N || y < 0 || y >= M) {
+			return;
+		}
+
+		if (graph[x][y] == 6) {
+			return;
+		}
+
+		// 왜 그냥 다 -1로 덮어버리면 안되나?
+		// 그럼 다음 cctv도 덮어버려서 실행을 못하게 할 수 있기 때문이다
+		if (graph[x][y] == 0) {
+			graph[x][y] = -1;
+		}
+	}
 }
 
-void dfs(int idx){
-    if(idx == cctv.size()){
-        int cnt = 0;
-        for(int i = 0; i < N; i++)
-            for(int j = 0; j < M; j++)
-                if(!arr[i][j]) cnt++;
+void dfs(int idx) {
+	if (idx == cctv.size()) {
+		int cnt = 0;
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < M; j++) {
+				if (graph[i][j] == 0) {
+					cnt += 1;
+				}
+			}
+		}
 
-        ans = min(ans, cnt);
-        return;
-    }
-    
-    int x = cctv[idx].first;
-    int y = cctv[idx].second;
-    int tmp[9][9];
+		res = min(res, cnt);
+		return;
+	}
 
-    for(int dir = 0; dir < 4; dir++){
-        for(int i = 0; i < N; i++)
-            for(int j = 0; j < M; j++)
-                tmp[i][j] = arr[i][j];
+	int x = cctv[idx].first;
+	int y = cctv[idx].second;
 
-        if(arr[x][y] == 1)
-            check(x, y, dir);
-        else if(arr[x][y] == 2){
-            check(x, y, dir);
-            check(x, y, dir+2);
-        }
-        else if (arr[x][y] == 3){
-            check(x, y, dir);
-            check(x, y, dir + 1);
-        }
-        else if (arr[x][y] == 4){
-            check(x, y, dir);
-            check(x, y, dir + 1);
-            check(x, y, dir + 2); 
-        }
-        else if (arr[x][y] == 5){
-            check(x, y, dir);
-            check(x, y, dir + 1);
-            check(x, y, dir + 2);
-            check(x, y, dir + 3);
-        }
+	int tmp[MAX][MAX];
 
-        dfs(idx+1);
-        // case 종료이므로 초기화
-        for(int i = 0; i < N; i++)
-            for(int j = 0; j < M; j++)
-                arr[i][j] = tmp[i][j];
-    }    
+	for (int dir = 0; dir < 4; dir++) {
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < M; j++) {
+				tmp[i][j] = graph[i][j];
+			}
+		}
+
+		if (graph[x][y] == 1) {
+			check(x, y, dir);
+		}
+		else if (graph[x][y] == 2) {
+			check(x, y, dir);
+			check(x, y, dir + 2);
+		}
+		else if (graph[x][y] == 3) {
+			check(x, y, dir);
+			check(x, y, dir + 1);
+		}
+		else if (graph[x][y] == 4) {
+			check(x, y, dir);
+			check(x, y, dir + 1);
+			check(x, y, dir + 2);
+		}
+		else if (graph[x][y] == 5) {
+			check(x, y, dir);
+			check(x, y, dir + 1);
+			check(x, y, dir + 2);
+			check(x, y, dir + 3);
+		}
+
+		dfs(idx + 1);
+
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < M; j++) {
+				graph[i][j] = tmp[i][j];
+			}
+		}
+	}
 }
 
-int main(){
-    ios::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
+int main(void) {
+	cin >> N >> M;
 
-    cin >> N >> M;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			cin >> graph[i][j];
 
-    for(int i = 0; i < N; i++){
-        for(int j = 0; j < M; j++){
-            cin >> arr[i][j];
-            if(arr[i][j] != 0 && arr[i][j] != 6)
-                cctv.push_back({i, j});
-        }
-    }
+			if (graph[i][j] >= 1 && graph[i][j] <= 5) {
+				cctv.push_back({ i,j });
+			}
+		}
+	}
 
-    dfs(0);
-    cout << ans << '\n';
+	dfs(0);
 
-    return 0;
+
+	cout << res << "\n";
 }
