@@ -1,26 +1,19 @@
 #include <iostream>
-#include <vector>
 
 using namespace std;
 
-#define MAX 100
-
 int n, m, k;
-
 int r, c;
 
-int sticker[41][41];
-int map[41][41];
+#define MAX 41
+int sticker[MAX][MAX];
+int graph[MAX][MAX];
 
-// sticker[41][41]에 하나 입력할 때마다 map 벡터에 저장할 수 있는지 확인하고
-// 저장할 수 있으면 map파일을 업데이트 해나가는 방식으로 진행하면 될 거 같다.
-
-
-int calc_sum() {
+int result(void) {
 	int cnt = 0;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (map[i][j] == 1) {
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
+			if (graph[i][j] == 1) {
 				cnt += 1;
 			}
 		}
@@ -28,20 +21,17 @@ int calc_sum() {
 	return cnt;
 }
 
-// sticker는 매번 받을 때마다 초기화를 해줘야 하므로 k가 넘어갈때마다 초기화해주자
 void sticker_init(void) {
-	for (int i = 0; i < 41; i++) {
-		for (int j = 0; j < 41; j++) {
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
 			sticker[i][j] = 0;
 		}
 	}
 }
 
-
-// 90도로 한번씩 돌릴때마다 체크를 해줘야 하는데 
-// 행렬에서 90도로 돌리면 n*m행렬 기준 (x,y) => (y, n-x-1)이 된다.
 void rotate(void) {
-	int tmp[41][41];
+	int tmp[MAX][MAX];
+
 	for (int i = 0; i < c; i++) {
 		for (int j = 0; j < r; j++) {
 			tmp[i][j] = sticker[r - j - 1][i];
@@ -50,46 +40,50 @@ void rotate(void) {
 
 	sticker_init();
 
-	for (int i = 0; i < 41; i++) {
-		for (int j = 0; j < 41; j++) {
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
 			sticker[i][j] = tmp[i][j];
 		}
 	}
+
 	swap(r, c);
 }
 
-// 들어갈 수 있는지 여부를 확인해야 할 것이다.
+
+// y,x에서 스티커가 그래프에 들어갈 수 있는지 여부 판단
 bool can_put(int y, int x) {
 	for (int i = 0; i < r; i++) {
 		for (int j = 0; j < c; j++) {
-			int nxtR = i + y;
-			int nxtC = j + x;
+			int nxtR = y + i;
+			int nxtC = x + j;
 
-			if ((sticker[i][j] == 1) && (map[nxtR][nxtC] == 1)) {
+			// 만약 y,x 기준으로 sticker를 쭉 옮겨봤을 때 sticker가 1일 때
+			// graph도 1이라면 붙일 수가 없을 것이다
+			if (graph[nxtR][nxtC] == 1 && sticker[i][j] == 1)
 				return false;
-			}
 		}
 	}
 	return true;
 }
 
-void sticking(int y, int x) {
-	for (int i = 0; i < r; i++) {
-		for (int j = 0; j < c; j++) {
-			int nxtR = i + y;
-			int nxtC = j + x;
-			if (sticker[i][j] == 1) {
-				map[nxtR][nxtC] = sticker[i][j];
-			}
-		}
-	}
-}
+// 이번엔 graph 전체에서 y,x를 옮겨가면서 스티커가 들어간다면 graph를 1로 바꿔줌
 
-bool sticker_attach(void) {
-	for (int i = 0; i < (n - r + 1); i++) {
-		for (int j = 0; j < (m - c + 1); j++) {
+bool input_sticker() {
+	for (int i = 0; i < n - r + 1; i++) {
+		for (int j = 0; j < m - c + 1; j++) {
+
 			if (can_put(i, j)) {
-				sticking(i, j);
+				for (int p = 0; p < r; p++) {
+					for (int q = 0; q < c; q++) {
+						int nxtR = p + i;
+						int nxtC = q + j;
+
+						if (sticker[p][q] == 1) {
+							graph[nxtR][nxtC] = 1;
+						}
+					}
+				}
+
 				return true;
 			}
 		}
@@ -97,42 +91,41 @@ bool sticker_attach(void) {
 	return false;
 }
 
-
 int main(void) {
-	ios_base::sync_with_stdio(0);
+	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
 	cin >> n >> m >> k;
-
 	for (int idx = 0; idx < k; idx++) {
+		cin >> r >> c;
 
 		sticker_init();
-		cin >> r >> c;
 
 		for (int i = 0; i < r; i++) {
 			for (int j = 0; j < c; j++) {
-				cin >> sticker[i][j];
+				int num;
+				cin >> num;
+				sticker[i][j] = num;
 			}
 		}
 
-		bool isAttach = sticker_attach();
-		if (isAttach) {
+		bool isattach = input_sticker();
+
+		if (isattach == true) {
 			continue;
 		}
 
-		for (int k = 0; k < 3; k++) {
+		for (int i = 0; i < 3; i++) {
 			rotate();
-			isAttach = sticker_attach();
-			if (isAttach) {
+			isattach = input_sticker();
+			if (isattach == true) {
 				break;
 			}
 		}
 
-
 	}
 
-	cout << calc_sum() << "\n";
+	cout << result() << "\n";
 
-
-
+	return 0;
 }
