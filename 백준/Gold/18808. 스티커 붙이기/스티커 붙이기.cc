@@ -1,131 +1,88 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
-int n, m, k;
-int r, c;
-
 #define MAX 41
+
+int N, M, K;
+int R, C;
 int sticker[MAX][MAX];
 int graph[MAX][MAX];
 
-int result(void) {
-	int cnt = 0;
-	for (int i = 0; i < MAX; i++) {
-		for (int j = 0; j < MAX; j++) {
-			if (graph[i][j] == 1) {
-				cnt += 1;
+bool Can_put_sticker(int x, int y) {
+	for (int i = 0; i < R; i++) {
+		for (int j = 0; j < C; j++) {
+			if (sticker[i][j] == 1 && graph[x + i][y + j] == 1) {
+				return false;
 			}
 		}
 	}
-	return cnt;
-}
 
-void sticker_init(void) {
-	for (int i = 0; i < MAX; i++) {
-		for (int j = 0; j < MAX; j++) {
-			sticker[i][j] = 0;
-		}
-	}
-}
-
-void rotate(void) {
-	int tmp[MAX][MAX];
-
-	for (int i = 0; i < c; i++) {
-		for (int j = 0; j < r; j++) {
-			tmp[i][j] = sticker[r - j - 1][i];
-		}
-	}
-
-	sticker_init();
-
-	for (int i = 0; i < MAX; i++) {
-		for (int j = 0; j < MAX; j++) {
-			sticker[i][j] = tmp[i][j];
-		}
-	}
-
-	swap(r, c);
-}
-
-
-// y,x에서 스티커가 그래프에 들어갈 수 있는지 여부 판단
-bool can_put(int y, int x) {
-	for (int i = 0; i < r; i++) {
-		for (int j = 0; j < c; j++) {
-			int nxtR = y + i;
-			int nxtC = x + j;
-
-			// 만약 y,x 기준으로 sticker를 쭉 옮겨봤을 때 sticker가 1일 때
-			// graph도 1이라면 붙일 수가 없을 것이다
-			if (graph[nxtR][nxtC] == 1 && sticker[i][j] == 1)
-				return false;
+	for (int i = 0; i < R; i++) {
+		for (int j = 0; j < C; j++) {
+			if (sticker[i][j] == 1) {
+				graph[x + i][y + j] = 1;
+			}
 		}
 	}
 	return true;
 }
 
-// 이번엔 graph 전체에서 y,x를 옮겨가면서 스티커가 들어간다면 graph를 1로 바꿔줌
+void rotate(void) {
+	int tmp[MAX][MAX];
 
-bool input_sticker() {
-	for (int i = 0; i < n - r + 1; i++) {
-		for (int j = 0; j < m - c + 1; j++) {
-
-			if (can_put(i, j)) {
-				for (int p = 0; p < r; p++) {
-					for (int q = 0; q < c; q++) {
-						int nxtR = p + i;
-						int nxtC = q + j;
-
-						if (sticker[p][q] == 1) {
-							graph[nxtR][nxtC] = 1;
-						}
-					}
-				}
-
-				return true;
-			}
+	for (int i = 0; i < MAX; i++) {
+		for (int j = 0; j < MAX; j++) {
+			tmp[i][j] = sticker[i][j];
 		}
 	}
-	return false;
+
+	for (int i = 0; i < C; i++) {
+		for (int j = 0; j < R; j++) {
+			sticker[i][j] = tmp[R - 1 - j][i];
+		}
+	}
+	swap(R, C);
 }
 
+
 int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
+	cin >> N >> M >> K;
 
-	cin >> n >> m >> k;
-	for (int idx = 0; idx < k; idx++) {
-		cin >> r >> c;
+	while (K--) {
+		cin >> R >> C;
 
-		sticker_init();
-
-		for (int i = 0; i < r; i++) {
-			for (int j = 0; j < c; j++) {
-				int num;
-				cin >> num;
-				sticker[i][j] = num;
+		for (int i = 0; i < R; i++) {
+			for (int j = 0; j < C; j++) {
+				cin >> sticker[i][j];
 			}
 		}
 
-		bool isattach = input_sticker();
-
-		if (isattach == true) {
-			continue;
-		}
-
-		for (int i = 0; i < 3; i++) {
+		for (int dir = 0; dir < 4; dir++) {
+			bool already_put = false;
+			for (int i = 0; i <= N - R; i++) {
+				if (already_put) break;
+				for (int j = 0; j <= M - C; j++) {
+					if (Can_put_sticker(i, j)) {
+						already_put = true;
+						break;
+					}
+				}
+			}
+			if (already_put) break;
 			rotate();
-			isattach = input_sticker();
-			if (isattach == true) {
-				break;
-			}
 		}
 
 	}
+	int cnt = 0;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			if (graph[i][j] == 1) {
+				cnt += 1;
+			}
+		}
+	}
 
-	cout << result() << "\n";
-
-	return 0;
+	cout << cnt;
 }
