@@ -2,7 +2,7 @@
 #include <vector>
 #include <queue>
 #include <string>
-
+#include <tuple>
 
 #define MAX 1001
 
@@ -22,20 +22,22 @@ int dy[4] = { -1,1,0,0 };
 
 
 int bfs() {
-	queue<pair<pair<int, int>,pair<int, int>>> q;
-	q.push({ { 0,0 }, { 0,1 } });
-	visited[0][0][0] = 1;
+	// q에 {x,y}, 벽 부순 횟수 저장, 안에 요소가 3개이기 때문에 tuple 사용
+
+	queue<tuple<int, int, int>> q;
+	q.push({0,0, 0 });
+	// dist로 따로 둬서 사용할거라면 visited는 필요 없음.
+	dist[0][0][0] = 1;
 
 	while (!q.empty()) {
-		auto cur = q.front(); q.pop();
-		int cur_x = cur.first.first;
-		int cur_y = cur.first.second;
-
-		int pass_wall_cnt = cur.second.first;
-		int result = cur.second.second;
+		auto cur = q.front();
+		q.pop();
+		int cur_x = get<0>(cur);
+		int cur_y = get<1>(cur);
+		int wall_pass = get<2>(cur);
 
 		if (cur_x == n - 1 && cur_y == m - 1) {
-			return result;
+			return dist[cur_x][cur_y][wall_pass];
 		}
 
 		for (int i = 0; i < 4; i++) {
@@ -46,13 +48,17 @@ int bfs() {
 				continue;
 			}
 
-			if (graph[nx][ny] == 1 && pass_wall_cnt == 0 && visited[nx][ny][1] == 0) {
-				visited[nx][ny][pass_wall_cnt + 1] = 1;
-				q.push({ {nx,ny}, {pass_wall_cnt + 1, result + 1} });
+			if (graph[nx][ny] == 0) {
+				if (dist[nx][ny][wall_pass] == 0) {
+					dist[nx][ny][wall_pass] = dist[cur_x][cur_y][wall_pass] + 1;
+					q.push({ nx,ny, wall_pass });
+				}
 			}
-			else if (graph[nx][ny] == 0 && visited[nx][ny][pass_wall_cnt] == false) {
-				visited[nx][ny][pass_wall_cnt] = 1;
-				q.push({ {nx,ny}, {pass_wall_cnt , result + 1} });
+			else {
+				if (dist[nx][ny][1] == 0 && wall_pass == 0) {
+					dist[nx][ny][wall_pass + 1] = dist[cur_x][cur_y][wall_pass] + 1;
+					q.push({ nx,ny,1 });
+				}
 			}
 		}
 	}
