@@ -1,50 +1,53 @@
 #include <iostream>
-#include <queue>
 #include <vector>
+#include <queue>
 #include <algorithm>
-#include <deque>
 
-
-#define MAX 101
 using namespace std;
 
-int n, k, l;
-int result;
-int cur_dir = 0;
-int dx[4] = { 0,1,0,-1 };
-int dy[4] = { 1,0,-1,0 };
+#define MAX 101
 
 int graph[MAX][MAX];
 
-int main() {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
-	
-	cin >> n >> k;
+int n, k, l;
+
+int dx[4] = { 0,1,0,-1 };
+int dy[4] = { 1,0,-1,0 };
+
+int cur_dir = 0;
+int time_result = 0;
+
+int main(void) {
+	cin >> n;
+	cin >> k;
 	for (int i = 0; i < k; i++) {
 		int row, col;
 		cin >> row >> col;
-		graph[row-1][col-1] = 1;
+		graph[row - 1][col - 1] = 1;
 	}
 
 	cin >> l;
-	queue<pair<int, char>> q;
+	
+	queue<pair<int, char>> transfer;
+
 	for (int i = 0; i < l; i++) {
 		int x;
 		char c;
 		cin >> x >> c;
-		q.push({ x,c });
+		transfer.push({ x,c });
 	}
-
 	graph[0][0] = 2;
-	deque<pair<int, int>> dq;
-	dq.push_back({ 0,0 });
+	deque<pair<int, int>> snake;
+	snake.push_back({ 0,0 });
+	
 
 	while (true) {
-		result++;
-		auto cur = dq.back();
+		time_result++;
+		
+		auto cur = snake.back();
 		int cur_x = cur.first;
 		int cur_y = cur.second;
+
 		int nx = cur_x + dx[cur_dir];
 		int ny = cur_y + dy[cur_dir];
 
@@ -57,16 +60,21 @@ int main() {
 		}
 
 		if (graph[nx][ny] != 1) {
-			graph[dq.front().first][dq.front().second] = 0;
-			dq.pop_front();
+			auto head = snake.front();
+			int head_x = head.first;
+			int head_y = head.second;
+			graph[head_x][head_y] = 0;
+			snake.pop_front();
 		}
 
 		graph[nx][ny] = 2;
-		dq.push_back({ nx,ny });
+		snake.push_back({ nx,ny });
 
-		if (result == q.front().first) {
-			char change_dir = q.front().second;
-			if (change_dir == 'D') {
+		
+		
+		if (!transfer.empty() && time_result == transfer.front().first) {
+			char transfer_dir = transfer.front().second;
+			if (transfer_dir == 'D') {
 				cur_dir += 1;
 				if (cur_dir == 4) {
 					cur_dir = 0;
@@ -78,18 +86,11 @@ int main() {
 					cur_dir = 3;
 				}
 			}
-			q.pop();
+
+			transfer.pop();
 		}
 
-		//for (int i = 0; i < n; i++) {
-		//	for (int j = 0; j < n; j++) {
-		//		cout << graph[i][j] << " ";
-		//	}
-		//	cout << "\n";
-		//}
-		//cout << "\n";
 	}
-
-	cout << result;
-
+	
+	cout << time_result;
 }
