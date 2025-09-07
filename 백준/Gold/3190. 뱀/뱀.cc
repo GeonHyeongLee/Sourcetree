@@ -39,7 +39,6 @@ int main(void) {
 	graph[0][0] = 2;
 	deque<pair<int, int>> snake;
 	snake.push_back({ 0,0 });
-	
 
 	while (true) {
 		time_result++;
@@ -71,22 +70,10 @@ int main(void) {
 		snake.push_back({ nx,ny });
 
 		
-		
 		if (!transfer.empty() && time_result == transfer.front().first) {
-			char transfer_dir = transfer.front().second;
-			if (transfer_dir == 'D') {
-				cur_dir += 1;
-				if (cur_dir == 4) {
-					cur_dir = 0;
-				}
-			}
-			else {
-				cur_dir -= 1;
-				if (cur_dir == -1) {
-					cur_dir = 3;
-				}
-			}
-
+			char c = transfer.front().second;
+			if (c == 'D') cur_dir = (cur_dir + 1) % 4;
+			else          cur_dir = (cur_dir + 3) % 4;
 			transfer.pop();
 		}
 
