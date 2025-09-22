@@ -1,32 +1,29 @@
 #include <iostream>
-#include <algorithm>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
-#define MAX 200001
-#define MAX 200001
-vector<int> house;
 int n;
 int c;
-int used_router = 0;
+vector<int> house;
 
-bool can_use(int middle) {
-	used_router = 1;
+bool can_go(int mid) {
+
 	int now = house[0];
+	int cnt = 1;
 
 	for (int i = 1; i < n; i++) {
-		if (house[i] >= now + middle) {
+		if (house[i] >= now + mid) {
 			now = house[i];
-			used_router += 1;
-			if (used_router >= c) {
+			cnt += 1;
+			if (cnt >= c) {
 				return true;
 			}
 		}
 	}
 	return false;
 }
-
 int main(void) {
 	cin >> n >> c;
 	for (int i = 0; i < n; i++) {
@@ -34,20 +31,21 @@ int main(void) {
 		cin >> x;
 		house.push_back(x);
 	}
+	
 	sort(house.begin(), house.end());
 
 	int head = house.front();
 	int tail = house.back();
 
-	int closest = 1;
+	int closest = 0;
 	int farthest = tail - head;
 
-	int answer = 0;
+	int result = 0;
 	while (closest <= farthest) {
 		int middle = (closest + farthest) / 2;
 
-		if (can_use(middle)) {
-			answer = middle;
+		if (can_go(middle)) {
+			result = middle;
 			closest = middle + 1;
 		}
 		else {
@@ -55,7 +53,5 @@ int main(void) {
 		}
 	}
 
-	cout << answer;
+	cout << result;
 }
-
-
