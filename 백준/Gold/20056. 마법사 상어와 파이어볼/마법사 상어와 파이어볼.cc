@@ -1,153 +1,185 @@
 #include <iostream>
 #include <vector>
 
-// n의 최대 크기
 #define MAX 52
 
 using namespace std;
 
-int N; // 격자 크기 
-int M; // 처음 시작 파이어볼 숫자
-int K; // 이동 명령 횟수
+// 2차원 배열에서 행은 y, 열은 x
+// 행(row) = 세로 = y
+// 열(col) = 가로 = x
+// 그러니까 2차원 배열 graph는 graph[ny][nx]
+// 그냥 간단하게 평소 하던 x,y를 모두 뒤집었다고 생각하자
 
-// 8방위 이동 방향 설정 (dy: 행(y), dx: 열(x))
-int dy[8] = { -1,-1,0,1,1,1,0,-1 };
-int dx[8] = { 0, 1,1,1,0,-1,-1,-1 };
 
-// fireball 구조체 => 행(y), 열(x), 질량, 방향, 속도
+int N; // 격자 크기
+int M; // 파이어볼 개수
+int K; // 명령 수행 횟수
+
+int dy[8] = { -1,-1,0,1,1,1,0,-1 }; // 행
+int dx[8] = { 0,1,1,1,0,-1,-1,-1 }; // 열
+
 struct fireball {
-	int y;
-	int x;
-	int mess;
-	int speed;
-	int dir;
+	int y; // 행
+	int x; // 열
+	int mass; // 질량
+	int speed; // 속도
+	int direction; // 방향
 };
 
+
+// graph[행][열]  
+// 행 : 아래로 내려갈 수록 커짐 
+// 열 : 옆으로 갈 수록 커짐
 vector<fireball> graph[MAX][MAX];
 
-void boundary_set(int& x, int& y) {
-	if (x < 1) x += N;
-	if (x > N) x -= N;
-	if (y < 1) y += N;
-	if (y > N) y -= N;
-}
 
-// 이동 방법 설정
-void move_fireball(void) {
-	vector<fireball> copy_graph[MAX][MAX];
 
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			if (graph[i][j].empty()) continue;
-
-			for (int k = 0; k < (int)graph[i][j].size(); k++) {
-				int m = graph[i][j][k].mess;
-				int d = graph[i][j][k].dir;
-				int s = graph[i][j][k].speed % N; // 속도는 범위 이상을 넘어서지 않도록 줄여준다
-				int y = graph[i][j][k].y;
-				int x = graph[i][j][k].x;
-
-				int ny = y + s * dy[d]; // 행(y) ← dy
-				int nx = x + s * dx[d]; // 열(x) ← dx
-				boundary_set(nx, ny);
-
-				copy_graph[ny][nx].push_back({ ny, nx, m, graph[i][j][k].speed, d });
-			}
-			// 원본 칸은 비워둠 (다음 단계에서 덮어씀)
-		}
+void boundary_set(int& nx, int& ny) {
+	if (nx < 1) {
+		nx += N;
 	}
-
-	// 1..N 범위만 반영
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			graph[i][j] = copy_graph[i][j];
-		}
+	if (nx > N) {
+		nx -= N;
+	}
+	if (ny < 1) {
+		ny += N;
+	}
+	if (ny > N) {
+		ny -= N;
 	}
 }
 
-void sum_fireball(void) {
+void move_fireball() {
 	vector<fireball> copy_graph[MAX][MAX];
 
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			int sz = (int)graph[i][j].size();
-			if (sz == 0) {
-				continue;
-			}
-			else if (sz == 1) {
-				copy_graph[i][j] = graph[i][j];
+	for (int y = 1; y <= N; y++) { // 행
+		for (int x = 1; x <= N; x++) { // 열
+			if (!graph[y][x].empty()) {
+				for (int k = 0; k < graph[y][x].size(); k++) {
+					
+					int m = graph[y][x][k].mass;
+					int s = graph[y][x][k].speed;
+					
+					// 속도는 너무 빠르면 범위를 벗어나버림 최대 크기 격자 크기로 제한
+					s %= N;
+					
+					int d = graph[y][x][k].direction;
+
+					int nx = graph[y][x][k].x + s * dx[d]; // 다음 열
+					int ny = graph[y][x][k].y + s * dy[d]; // 다음 행 
+
+					boundary_set(nx, ny);
+
+					//cout << "바뀐 좌표값 : " << ny << " " << nx << "\n";
+					copy_graph[ny][nx].push_back({ ny, nx, m, graph[y][x][k].speed,d });
+				}
+				graph[y][x].clear();
 			}
 			else {
-				int sum_mess = 0;
-				int sum_speed = 0;
-				int even_cnt = 0, odd_cnt = 0;
+				continue;
+			}
+		}
+	}
 
-				for (int k = 0; k < sz; k++) {
-					sum_mess += graph[i][j][k].mess;
-					sum_speed += graph[i][j][k].speed;
-					if (graph[i][j][k].dir % 2 == 0) even_cnt++;
-					else odd_cnt++;
+	for (int y = 1; y <= N; y++) {
+		for (int x = 1; x <= N; x++) {
+			graph[y][x] = copy_graph[y][x];
+		}
+	}
+}
+
+void sum_fireball() {
+	vector<fireball> copy_graph[MAX][MAX];
+
+	for (int y = 1; y <= N; y++) {
+		for (int x = 1; x <= N; x++) {
+			if (graph[y][x].size() == 0) {
+				continue;
+			}
+			else if (graph[y][x].size() == 1) {
+				copy_graph[y][x] = graph[y][x];
+				continue;
+			}
+			else {
+				int sum_m = 0;
+				int sum_s = 0;
+				int ball_cnt = 0;
+				int ball_odd_cnt = 0;
+				int ball_even_cnt = 0;
+
+				for (int k = 0; k < graph[y][x].size(); k++) {
+					int m = graph[y][x][k].mass;
+					int s = graph[y][x][k].speed;
+					int d = graph[y][x][k].direction;
+
+					sum_m += m;
+					sum_s += s;
+					ball_cnt += 1;
+
+					if (d % 2 == 0) {
+						ball_even_cnt += 1;
+					}
+					else {
+						ball_odd_cnt += 1;
+					}
+
 				}
 
-				int nm = sum_mess / 5;
-				if (nm == 0) {
-					// 이 칸은 비워둔다
-					continue; // (함수 return 아님!)
-				}
-				int ns = sum_speed / sz;
+				sum_m /= 5;
+				sum_s /= ball_cnt;
 
-				if (even_cnt == sz || odd_cnt == sz) {
-					// 모두 짝수 또는 모두 홀수
-					copy_graph[i][j].push_back({ i, j, nm, ns, 0 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 2 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 4 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 6 });
+				if (sum_m == 0) {
+					continue;
+				}
+
+				if (ball_cnt == ball_odd_cnt || ball_cnt == ball_even_cnt) {
+					for (int t = 0; t < 4; t++) {
+						copy_graph[y][x].push_back({ y,x,sum_m,sum_s, 2 * t });
+					}
 				}
 				else {
-					// 섞여 있음
-					copy_graph[i][j].push_back({ i, j, nm, ns, 1 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 3 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 5 });
-					copy_graph[i][j].push_back({ i, j, nm, ns, 7 });
+					for (int t = 0; t < 4; t++) {
+						copy_graph[y][x].push_back({ y,x,sum_m,sum_s, 2 * t + 1 });
+					}
 				}
 			}
 		}
 	}
 
-	// 1..N 범위만 반영 (한 번만)
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			graph[i][j] = copy_graph[i][j];
+	for (int y = 1; y <= N; y++) {
+		for (int x = 1; x <= N; x++) {
+			graph[y][x] = copy_graph[y][x];
 		}
 	}
 }
 
 int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(nullptr);
-
 	cin >> N >> M >> K;
-
-	// 기본 입력: graph[y][x]에 저장
+	
 	for (int i = 0; i < M; i++) {
-		int y, x, m, s, d;
+		int y, x, m, s, d; // r : 행, c : 열, m : 질량, s : 속도, d : 방향
 		cin >> y >> x >> m >> s >> d;
-		graph[y][x].push_back({ y, x, m, s, d });
+		graph[y][x].push_back({ y,x,m,s,d });
 	}
 
-	// 이동 명령 K번 수행
+
 	for (int i = 0; i < K; i++) {
 		move_fireball();
 		sum_fireball();
 	}
 
 	long long result = 0;
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			for (int k = 0; k < (int)graph[i][j].size(); k++) {
-				result += graph[i][j][k].mess;
+
+	for (int y = 1; y <= N; y++) {
+		for (int x = 1; x <= N; x++) {
+			if (!graph[y][x].empty()) {
+				for (int k = 0; k < graph[y][x].size(); k++) {
+					result += graph[y][x][k].mass;
+				}
 			}
 		}
 	}
+
 	cout << result << "\n";
 }
