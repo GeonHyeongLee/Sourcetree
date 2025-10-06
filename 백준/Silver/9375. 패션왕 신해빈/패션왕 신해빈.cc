@@ -1,41 +1,39 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <vector>
 #include <unordered_map>
 
 using namespace std;
 
 int n;
 
-vector<string> types;
-
 int main(void) {
 	cin >> n;
+	cin.ignore();
+
 	for (int i = 0; i < n; i++) {
 		int num;
 		cin >> num;
 		cin.ignore();
 		unordered_map<string, int> clothes;
-
 		for (int j = 0; j < num; j++) {
-			string str;
-			getline(cin, str);
-			stringstream ss(str);
+			string cloth;
+			getline(cin, cloth);
 
-			string name, what;
-			ss >> name >> what;
-			clothes[what] += 1;
-			types.push_back(what);
+			stringstream ss(cloth);
+			string name, type;
+			ss >> name >> type;
+
+			//cout << name << type << "\n";
+
+			clothes[type] += 1;
 		}
-
-		int answer = 1;
+		int result = 1;
 
 		for (auto& map : clothes) {
-			answer *= (map.second+1);
+			result *= (map.second + 1);
 		}
 
-
-		cout << answer - 1 << "\n";
+		cout << result - 1 << "\n";
 	}
 }
