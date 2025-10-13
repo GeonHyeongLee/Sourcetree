@@ -4,10 +4,9 @@
 using namespace std;
 
 int t;
-
 int n;
-int stickers[2][MAX];
 
+int stickers[2][MAX];
 
 int main(void) {
 	cin >> t;
@@ -19,19 +18,17 @@ int main(void) {
 			}
 		}
 
-		// dp를 윗열, 아랫열로 두 개로 나눈다.
 		int dp_up[MAX];
 		int dp_down[MAX];
 
 		dp_up[0] = stickers[0][0];
 		dp_down[0] = stickers[1][0];
-
 		dp_up[1] = dp_down[0] + stickers[0][1];
 		dp_down[1] = dp_up[0] + stickers[1][1];
 
-		for (int p = 2; p< n; p++) {
-			dp_up[p] = max(dp_down[p - 1], dp_down[p - 2]) + stickers[0][p];
-			dp_down[p] = max(dp_up[p - 1], dp_up[p - 2]) + stickers[1][p];
+		for (int k = 2; k < n; k++) {
+			dp_up[k] = max(dp_down[k - 1], dp_down[k - 2]) + stickers[0][k];
+			dp_down[k] = max(dp_up[k - 1], dp_up[k - 2]) + stickers[1][k];
 		}
 
 		cout << max(dp_up[n - 1], dp_down[n - 1]) << "\n";
