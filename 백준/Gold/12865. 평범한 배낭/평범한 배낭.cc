@@ -1,19 +1,14 @@
 #include <iostream>
-#include <unordered_map>
-#include <algorithm>
-
-#define MAX 100001
-
+#define MAX 101
 using namespace std;
 
 int n;
 int k;
 
-
 int weight[MAX];
 int value[MAX];
 
-int dp[101][MAX];
+int dp[MAX][100001];
 
 int main(void) {
 	cin >> n >> k;
@@ -24,7 +19,7 @@ int main(void) {
 		weight[i] = w;
 		value[i] = v;
 	}
-	
+
 	for (int i = 1; i <= n; i++) {
 		for (int j = 0; j <= k; j++) {
 			if (j >= weight[i]) {
@@ -33,9 +28,8 @@ int main(void) {
 			else {
 				dp[i][j] = dp[i - 1][j];
 			}
-
 		}
 	}
-	cout << dp[n][k];
 
+	cout << dp[n][k];
 }
