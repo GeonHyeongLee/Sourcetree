@@ -1,10 +1,11 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+
 int n;
 int k;
 
-int main() {
+int main(void) {
 	cin >> n >> k;
 
 	vector<int> coin(n + 1);
@@ -13,19 +14,15 @@ int main() {
 		cin >> coin[i];
 	}
 
-	vector<int> cost_coin(k + 1, 0);
+	vector<int> cnt(k + 1, 0);
 
-	cost_coin[0] = 1;
+	cnt[0] = 1; // 젤 중요 아무 동전도 선택하지 않았을 때
 
 	for (int i = 1; i <= n; i++) {
 		for (int j = coin[i]; j <= k; j++) {
-			cost_coin[j] += cost_coin[j - coin[i]];
-			//cout << cost_coin[j] << "\n";
+			cnt[j] += cnt[j - coin[i]];
 		}
 	}
 
-
-
-	cout << cost_coin[k];
-
+	cout << cnt[k];
 }
