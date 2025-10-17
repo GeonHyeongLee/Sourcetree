@@ -7,6 +7,7 @@ using namespace std;
 int n;
 
 int main(void) {
+
 	cin >> n;
 
 	vector<int> A(n + 1);
@@ -16,12 +17,12 @@ int main(void) {
 	}
 
 	vector<int> dp(n + 1, 1);
-	vector<int> prev(n + 1, -1); // 경로 추적을 위한 직전 인덱스 저장
+	vector<int> prev(n + 1, -1);
 
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < i; j++) {
 			if (A[i] > A[j] && dp[j] + 1 > dp[i]) {
-				dp[i] = max(dp[i], dp[j] + 1);
+				dp[i] = dp[j] + 1;
 				prev[i] = j;
 			}
 		}
@@ -37,16 +38,11 @@ int main(void) {
 		}
 	}
 
-	//cout << "max_len : " << max_len << "\n";
-
-	//cout << "last_idx : " << last_idx << "\n";
-
-	// last_idx는 prev에 들어가서 가장 마지막 idx가 누군지 계속 반환해줘야된다
-
 	vector<int> lis;
+
 	while (last_idx != -1) {
-		lis.push_back(A[last_idx]); // A[last_dx]값이 들어가줘야 할 것
-		last_idx = prev[last_idx]; // 그 다음 다시 idx 다음 값으로 돌려줌
+		lis.push_back(A[last_idx]);
+		last_idx = prev[last_idx];
 	}
 
 	reverse(lis.begin(), lis.end());
