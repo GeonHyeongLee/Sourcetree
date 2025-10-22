@@ -3,23 +3,24 @@
 
 using namespace std;
 
-int n;
-int k;
+int n, k;
 
 int main(void) {
 	cin >> n >> k;
-	vector<int> coin(n + 1);
+
+	vector<int> value(n + 1);
 
 	for (int i = 1; i <= n; i++) {
-		cin >> coin[i];
+		cin >> value[i];
 	}
 
 	vector<int> dp(k + 1, 0);
+
 	dp[0] = 1;
 
 	for (int i = 1; i <= n; i++) {
-		for (int j = coin[i]; j <= k; j++) {
-			dp[j] = max(dp[j], dp[j - coin[i]] + dp[j]);
+		for (int j = value[i]; j <= k; j++) {
+			dp[j] += dp[j - value[i]];
 		}
 	}
 
