@@ -1,56 +1,89 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
 #include <queue>
+
+#define MAX 100001
 
 using namespace std;
 
-#define MAX 100001
-int n, k; // n : 수빈, k : 동생
-
-// 걷는다 x-1 , x+1
-// 순간이동 2 * x
+int n, k;
+// 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+// 1 0 1 0 0 
+// 1 2 
+// 5 -> (4,6,10) => (4,1),(6,1),(10,1)
+// (4,6,10) => (3,8),(7,12),(9,11,20) => (3,7,8,9,11,12,20 = 2)
+// 
 int result[MAX];
 bool visited[MAX];
 
+int min_num = 987654321;
+int cnt = 0;
 
-void bfs(int st) {
-
+void bfs(int num) {
 	queue<int> q;
-	q.push(st);
-	visited[st] = true;
-	result[st] = 0;
-
+	q.push(num);
+	visited[num] = true;
 	while (!q.empty()) {
-		int x = q.front();
-		q.pop();
+		int x = q.front(); q.pop();
+		
 		if (x == k) {
 			return;
 		}
 
-
-		int dx[3] = { x + 1 ,x - 1, x * 2 };
-		
 		for (int i = 0; i < 3; i++) {
-			int nx = dx[i];
-			if (nx < 0 || nx >= MAX)
-				continue;
-			if (visited[nx]) {
-				continue;
+			int nx;
+			if (i == 0) {
+				nx = x * 2;
+
+				if (nx < 0 || nx >= MAX) {
+					continue;
+				}
+
+				if (visited[nx]) {
+					continue;
+				}
+				q.push(nx);
+				visited[nx] = true;
+				result[nx] = result[x] + 1;
 			}
-			visited[nx] = true;
-			result[nx] = result[x] + 1;
-			q.push(nx);
+			else if (i == 1) {
+				nx = x + 1;
+				if (nx < 0 || nx >= MAX) {
+					continue;
+				}
+
+				if (visited[nx]) {
+					continue;
+				}
+
+				q.push(nx);
+				visited[nx] = true;
+				result[nx] = result[x] + 1;
+			}
+			else if (i == 2) {
+				nx = x - 1;
+				if (nx < 0 || nx >= MAX) {
+					continue;
+				}
+
+				if (visited[nx]) {
+					continue;
+				}
+				q.push(nx);
+				visited[nx] = true;
+				result[nx] = result[x] + 1;
+			}
 		}
 	}
 }
 
 int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
-
 	cin >> n >> k;
 
 	bfs(n);
+
+	//for (int i = 0; i <= 100; i++) {
+	//	cout << result[i] << "\n";
+	//}
+
 	cout << result[k];
 }
