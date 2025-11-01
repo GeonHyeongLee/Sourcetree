@@ -2,98 +2,85 @@
 #include <vector>
 #include <queue>
 
-#define MAX 51
-
 using namespace std;
 
-int T;
-
-int M, N, K;
-int graph[MAX][MAX];
-bool visited[MAX][MAX];
-int result = 0;
+int t;
+int m, n, k;
 
 int dx[4] = { 0,0,-1,1 };
 int dy[4] = { -1,1,0,0 };
 
-void graph_init() {
-	for (int i = 0; i < MAX; i++) {
-		for (int j = 0; j < MAX; j++) {
-			graph[i][j] = 0;
-		}
-	}
-}
+int graph[51][51];
+bool visited[51][51];
+
 void visited_init() {
-	for (int i = 0; i < MAX; i++) {
-		for (int j = 0; j < MAX; j++) {
+	for (int i = 0; i < 51; i++) {
+		for (int j = 0; j < 51; j++) {
 			visited[i][j] = false;
 		}
 	}
 }
+void graph_init() {
+	for (int i = 0; i < 51; i++) {
+		for (int j = 0; j < 51; j++) {
+			graph[i][j] = 0;
+		}
+	}
+}
 
-void bfs(int x, int y) {
+void bfs(int num_x, int num_y) {
 	queue<pair<int, int>> q;
-	visited[x][y] = true;
-	q.push({ x,y });
+	q.push({ num_x, num_y });
+	visited[num_x][num_y] = true;
 
 	while (!q.empty()) {
-		auto cur = q.front();
-		q.pop();
-		int cur_x = cur.first;
-		int cur_y = cur.second;
-		
-		for (int i = 0; i < 4; i++) {
-			int nx = cur_x + dx[i];
-			int ny = cur_y + dy[i];
+		auto cur = q.front(); q.pop();
+		int x = cur.first;
+		int y = cur.second;
 
-			if (nx >= M || nx < 0 || ny >= N || ny < 0) {
+		for (int i = 0; i < 4; i++) {
+			int nx = x + dx[i];
+			int ny = y + dy[i];
+
+			if (nx < 0 || nx >= n || ny < 0 || ny >= m) {
 				continue;
 			}
-
 			if (visited[nx][ny] || graph[nx][ny] == 0) {
 				continue;
 			}
 
 			visited[nx][ny] = true;
-			//cout << nx << "," << ny << "get true\n";
 			q.push({ nx,ny });
-
 		}
 	}
 }
 
 int main(void) {
-	cin >> T;
+	cin >> t;
+	
+	for (int c = 0; c < t; c++) {
+		cin >> m >> n >> k;
 
-	for (int i = 0; i < T; i++) {
-		cin >> M >> N >> K;
-		
-		graph_init();
 		visited_init();
-		result = 0;
-		for (int j = 0; j < K; j++) {
+		graph_init();
+		for (int i = 0; i < k; i++) {
 			int x, y;
 			cin >> x >> y;
-			graph[x][y] = 1;
+			graph[y][x] = 1;
 		}
 
-		//for (int j = 0; j < M; j++) {
-		//	for (int q = 0; q < N; q++) {
-		//		cout << graph[j][q] << " ";
-		//	}
-		//	cout << "\n";
-		//}
+		int cnt = 0;
 
-		for (int p = 0; p < M; p++) {
-			for (int q = 0; q < N; q++) {
-				if (!visited[p][q] && graph[p][q] == 1) {
-					//cout << "hello" << "\n";
-					bfs(p, q);
-					result += 1;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				if (visited[i][j] == false && graph[i][j] == 1) {
+					bfs(i, j);
+					cnt += 1;
 				}
 			}
 		}
 
-		cout << result << "\n";
+		cout << cnt << "\n";
 	}
+
 }
