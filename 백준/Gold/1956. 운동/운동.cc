@@ -7,15 +7,15 @@ using namespace std;
 
 int V, E;
 
-vector<vector<int>> graph(MAX, vector<int>(MAX, INF));
+vector<vector<int>> graph(401, vector<int>(401, INF));
 
 int main(void) {
 	cin >> V >> E;
 
 	for (int i = 0; i < E; i++) {
-		int u, v, w;
-		cin >> u >> v >> w;
-		graph[u][v] = w;
+		int a, b, c;
+		cin >> a >> b >> c;
+		graph[a][b] = c;
 	}
 
 	for (int k = 1; k <= V; k++) {
@@ -28,19 +28,17 @@ int main(void) {
 		}
 	}
 
-	int minnum = INF;
+	int min_cycle = INF;
 
 	for (int i = 1; i <= V; i++) {
-		if (graph[i][i] != INF) {
-			minnum = min(minnum, graph[i][i]);
-		}
+		min_cycle = min(min_cycle, graph[i][i]);
 	}
 
-	if (minnum == INF) {
-		cout << -1;
+	if (min_cycle == INF) {
+		cout << -1 << "\n";
 	}
 	else {
-		cout << minnum;
+		cout << min_cycle << "\n";
 	}
 
 }
